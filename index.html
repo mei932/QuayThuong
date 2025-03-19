@@ -33,7 +33,7 @@
             display: none;
             position: fixed;
             top: 0;
-            left: 0;
+            left: 10px;
             width: 100%;
             height: 100%;
             background: rgba(0, 0, 0, 0.5);
@@ -52,15 +52,24 @@
         }
         .modal-buttons {
             margin-top: 20px;
+    display: flex;
+    justify-content: center; /* Căn giữa các nút */
+    gap: 10px; /* Khoảng cách giữa các nút */
         }
         .modal-buttons button {
             padding: 10px 20px;
             margin: 5px;
+            margin-left: 10px;
             cursor: pointer;
         }
+        #saveWinner {
+    margin-left: 30px; /* Cách trái 30px */
+}
+
         /* Tạo lớp nền mờ (backdrop) khi modal mở */
         /* Backdrop để che phủ toàn bộ giao diện */
 #historyBackdrop {
+    display: none; /* Ẩn ban đầu */
     position: fixed;
     top: 0;
     left: 0;
@@ -73,15 +82,25 @@
 
 /* Modal sẽ hiển thị ở giữa màn hình */
 #historyModal {
+    display: none; /* Ẩn ban đầu */
     position: fixed;
-    top: 50%;
-    left: 85%;
-    transform: translate(-50%, -50%);
-    background-color: white;
-    padding: 20px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    z-index: 1000; /* Đảm bảo modal luôn ở trên backdrop */
-    display: none; /* Mặc định không hiển thị */
+    top: 10%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60%;
+    max-height: 80vh; /* Giới hạn chiều cao */
+    overflow-y: auto; /* Bật cuộn dọc nếu nội dung quá dài */
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+}
+
+#historyContent {
+    white-space: normal; /* Ngăn chặn giữ nguyên khoảng cách dòng của <pre> */
+    font-size: 14px;
+    line-height: 1.5;
 }
 
 /* Nút Đóng trong modal */
@@ -141,6 +160,34 @@
             border: none;
             border-radius: 10px;
         }
+        .modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 50%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: left;
+    max-width: 500px;
+    width: 90%;
+}
+
+.close {
+    float: right;
+    font-size: 25px;
+    cursor: pointer;
+}
+
 
     </style>
 </head>
@@ -171,7 +218,7 @@
 
 <!-- Modal -->
 <div id="historyModal">
-    <pre id="historyContent"></pre>
+    <div id="historyContent"></div>
     <button onclick="closeHistoryModal()">Đóng</button>
 </div>
   <!-- chèn nhạc  -->
@@ -197,6 +244,14 @@
     </div>
 
     <script>
+        const prizes = {
+    1: ["Bộ ấm siêu tốc", "Bộ Granem", "Bếp hồng ngoại", "Máy ép chậm", "Nồi chiên không dầu"],
+    2: ["Bộ Granem","Bộ ấm siêu tốc", " Máy ép chậm"],
+    3: ["Bộ ấm siêu tốc", "Bếp hồng ngoại", "Bộ ấm siêu tốc"],
+    4: ["Bộ Granem","Bếp hồng ngoại","Nồi chiên không dầu "],
+    5: ["Bộ ấm siêu tốc", "Bộ Granem", "Bộ Granem"]
+};
+
          const backgroundMusic = document.getElementById('backgroundMusic');
          const congratulationMusic = document.getElementById('congratulationMusic');
 
@@ -307,6 +362,7 @@ function closeHistoryModal() {
 
  
 
+
 function spinWheel() {
     if (spinning || names.length === 0) return;
     spinning = true;
@@ -314,7 +370,7 @@ function spinWheel() {
     let history = JSON.parse(localStorage.getItem("wheelHistory")) || [];
     let currentStage = parseInt(localStorage.getItem("currentStage")) || 1; // Lấy chặng hiện tại
 
-    // Kiểm tra nếu đã hoàn thành tất cả chặng
+    // Kiểm tra nếu đã hoàn thành tất cả các chặng
     if (currentStage > 5) {
         alert("🎊 Đã hoàn thành tất cả các chặng!");
         spinning = false;
@@ -329,21 +385,46 @@ function spinWheel() {
         if (!specialWinner && stage5Winners.length === 1) {
             let specialIndex = names.findIndex(entry => entry.id === "1111-FS001");
             if (specialIndex !== -1) {
-                spinning = false;
-                lastWinner = names[specialIndex];
+                spinning = true; // Bắt đầu quay
 
-                document.getElementById("winnerName").innerHTML = `🎉 Chúc mừng: <br><b>${lastWinner.name}</b> <br> Mã nhân viên: <b>${lastWinner.id}</b>`;
-                document.getElementById("winnerModal").style.display = "flex";
-            
+setTimeout(() => {
+    spinning = false; // Dừng quay sau 15s
+    lastWinner = names[specialIndex];
+
+    let prize = prizes[5][stage5Winners.length] || "Giải thưởng đặc biệt";
+
+    document.getElementById("winnerName").innerHTML = `🎉 Chúc mừng: <br><b>${lastWinner.name}</b> <br> Mã nhân viên: <b>${lastWinner.id}</b><br> Đã trúng: <b>${prize}</b>`;
+    congratulationMusic.play(); 
+    backgroundMusic.pause();
+    document.getElementById("winnerModal").style.display = "flex";
+    
+}, 15000); // Đợi 15 giây rồi hiển thị kết quả
                 return;
             }
         }
     }
 
+
+
+
+    // LẤY PHẦN THƯỞNG CHO CHẶNG HIỆN TẠI
+    let peopleInCurrentStage = history.filter(entry => entry.stage === currentStage).length;
+    let prize = "Hết quà mất rồi :((";
+    if (prizes[currentStage] && peopleInCurrentStage < prizes[currentStage].length) {
+        prize = prizes[currentStage][peopleInCurrentStage]; // Lấy giải thưởng theo thứ tự
+    }
+
+    // Nếu quay đến lượt thứ 6 -> chuyển qua chặng 2 và lấy phần thưởng của chặng 2
+    if (history.length + 1 === 6) {
+        currentStage = 2;
+        localStorage.setItem("currentStage", currentStage);
+        prize = prizes[2][0]; // Lấy phần thưởng đầu tiên của chặng 2
+    }
+
     // Quay ngẫu nhiên
     let randomExtraSpin = Math.random() * 360;
     let totalSpins = 360 * 5 + randomExtraSpin;
-    let duration = 500;
+    let duration = 100;
     let start = null;
     let lastAngle = angle;
 
@@ -370,7 +451,7 @@ function spinWheel() {
             if (selectedIndex < 0) selectedIndex += names.length;
             lastWinner = names[selectedIndex];
 
-            document.getElementById("winnerName").innerHTML = `🎉 Chúc mừng: <br><b>${lastWinner.name}</b> <br> Mã nhân viên: <b>${lastWinner.id}</b>`;
+            document.getElementById("winnerName").innerHTML = `🎉 Chúc mừng: <br><b>${lastWinner.name}</b> <br> Mã nhân viên: <b>${lastWinner.id}</b> <br> Đã trúng: <b>${prize}</b>`;
             document.getElementById("winnerModal").style.display = "flex";
             congratulationMusic.play(); // Phát nhạc chúc mừng
             backgroundMusic.pause();
@@ -378,25 +459,27 @@ function spinWheel() {
     }
     requestAnimationFrame(rotate);
 }
+
 document.getElementById("saveWinner").addEventListener("click", function () {
     if (lastWinner) {
         let history = JSON.parse(localStorage.getItem("wheelHistory")) || [];
-
-        // Cấu hình số lượng người tối đa trong từng chặng
-        const stageLimits = [5, 3, 3, 3, 3]; // Chặng 1 có 5 người, Chặng 2 có 3 người, v.v.
-
-        // Lấy chặng hiện tại từ localStorage, mặc định là chặng 1
+        const stageLimits = [5, 3, 3, 3, 3]; // Giới hạn số người trúng trong từng chặng
         let currentStage = parseInt(localStorage.getItem("currentStage")) || 1;
 
-        // Kiểm tra số lượng người đã quay trong chặng hiện tại
         let peopleInCurrentStage = history.filter(entry => entry.stage === currentStage).length;
 
-        // Lưu kết quả của lần quay
+        // Lấy phần thưởng tương ứng
+        let prize = "Hết quà mất rồi :((";
+        if (prizes[currentStage] && peopleInCurrentStage < prizes[currentStage].length) {
+            prize = prizes[currentStage][peopleInCurrentStage]; // Lấy giải thưởng theo thứ tự
+        }
+
         let currentTime = new Date().toLocaleString("vi-VN");
         history.push({
             stage: currentStage,
             name: lastWinner.name,
             id: lastWinner.id,
+            prize: prize,  // Lưu thêm phần thưởng
             time: currentTime
         });
 
@@ -404,31 +487,27 @@ document.getElementById("saveWinner").addEventListener("click", function () {
 
         alert(`✅ Kết quả đã được lưu!`);
 
-        // Nếu đã đủ số lượng quay cho chặng hiện tại, yêu cầu bấm OK để bắt đầu chặng tiếp theo
         if (peopleInCurrentStage + 1 >= stageLimits[currentStage - 1]) {
             setTimeout(() => {
                 if (currentStage < stageLimits.length) {
                     alert(`🎉 Hoàn thành Chặng ${currentStage}! Bấm OK để bắt đầu Chặng ${currentStage + 1}!`);
-                    currentStage += 1; // Chuyển sang chặng tiếp theo
-                    localStorage.setItem("currentStage", currentStage); // Lưu chặng mới vào localStorage
+                    currentStage += 1; 
+                    localStorage.setItem("currentStage", currentStage); 
                 } else {
                     alert("🎊 Đã hoàn thành tất cả các chặng!");
                 }
-            }, 500);
+            }, 70);
         }
 
-        // Đóng modal kết quả
         document.getElementById("winnerModal").style.display = "none";
-        congratulationMusic.pause(); // Dừng nhạc chúc mừng
-                congratulationMusic.currentTime = 0; // Reset nhạc
-                backgroundMusic.play(); // Phát lại nhạc nền
+        congratulationMusic.pause();
+        congratulationMusic.currentTime = 0;
+        backgroundMusic.play();
     }
 });
 
 
         document.getElementById("spinButton").addEventListener("click", spinWheel);
-
-        
 
         document.getElementById("viewHistory").addEventListener("click", function () {
     let history = JSON.parse(localStorage.getItem("wheelHistory")) || [];
@@ -446,18 +525,31 @@ document.getElementById("saveWinner").addEventListener("click", function () {
         groupedHistory[entry.stage].push(entry);
     });
 
-    let historyText = "📜 Lịch sử quay thưởng:\n";
+    let historyHTML = ""; // Thêm dòng này để khai báo biến
+
     Object.keys(groupedHistory).forEach((stage) => {
-        historyText += `\n🚀 Chặng ${stage}:\n`;
+        historyHTML += `<h3>🚀 Chặng ${stage}:</h3>`;
         groupedHistory[stage].forEach((entry) => {
-            historyText += `- 🏆 ${entry.name} (Mã NV: ${entry.id}) - ${entry.time}\n`;
+            historyHTML += `<li>🏆 <b>${entry.name}</b> (Mã NV: <b>${entry.id}</b>) <br> 🏅 Phần thưởng: <b>${entry.prize}</b> <br> ⏳ Thời gian: <i>${entry.time}</i></li>`;
         });
     });
 
-    document.getElementById("historyContent").textContent = historyText;
-    document.getElementById("historyModal").style.display = "block";
+    document.getElementById("historyContent").innerHTML = historyHTML;
+    openHistoryModal(); // Gọi hàm mở modal
+    
 });
 
+// Hàm mở modal (sử dụng backdrop )
+function openHistoryModal() {
+    document.getElementById("historyBackdrop").style.display = "block";
+    document.getElementById("historyModal").style.display = "block";
+}
+
+// Hàm đóng modal (khi click backdrop)
+function closeHistoryModal() {
+    document.getElementById("historyBackdrop").style.display = "none";
+    document.getElementById("historyModal").style.display = "none";
+}
 
 
 
@@ -495,14 +587,15 @@ document.getElementById("clearHistory").addEventListener("click", function() {
         "Chặng": entry.stage,
         "Mã NV": entry.id,
         "Tên Nhân Viên": entry.name,
-        "Thời Gian": entry.time
+        "Thời Gian": entry.time,
+        "Đã trúng":entry.prize
     }));
 
     let wb = XLSX.utils.book_new();
     let ws = XLSX.utils.json_to_sheet(formattedData);
 
     // Tạo header cho file Excel
-    let header = ["Chặng", "Mã NV", "Tên Nhân Viên", "Thời Gian"];
+    let header = ["Chặng", "Mã NV", "Tên Nhân Viên", "Thời Gian", "Phần thưởng"];
     XLSX.utils.sheet_add_aoa(ws, [header], { origin: "A1" });
 
     XLSX.utils.book_append_sheet(wb, ws, "Lịch Sử Quay");
