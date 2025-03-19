@@ -222,7 +222,7 @@
     <button onclick="closeHistoryModal()">Đóng</button>
 </div>
   <!-- chèn nhạc  -->
-  <audio id="backgroundMusic" autoplay loop muted>
+  <audio id="backgroundMusic" >
     <source src="static/sound/sound.mp3" type="audio/mp3">
   </audio>
   
@@ -267,7 +267,7 @@
         let lastWinner = "";
 
         document.getElementById('upload').addEventListener('change', function(event) {
-            backgroundMusic.play();
+            
             let reader = new FileReader();
             reader.readAsBinaryString(event.target.files[0]);
             reader.onload = function(e) {
@@ -366,6 +366,10 @@ function closeHistoryModal() {
 function spinWheel() {
     if (spinning || names.length === 0) return;
     spinning = true;
+    console.log("Bắt đầu quay, phát nhạc nền...");
+    backgroundMusic.play().catch(error => {
+        console.error("Không thể phát nhạc nền:", error);
+    });
 
     let history = JSON.parse(localStorage.getItem("wheelHistory")) || [];
     let currentStage = parseInt(localStorage.getItem("currentStage")) || 1; // Lấy chặng hiện tại
@@ -502,13 +506,13 @@ document.getElementById("saveWinner").addEventListener("click", function () {
         document.getElementById("winnerModal").style.display = "none";
         congratulationMusic.pause();
         congratulationMusic.currentTime = 0;
-        backgroundMusic.play();
+        // backgroundMusic.play();
     }
 });
 
 
         document.getElementById("spinButton").addEventListener("click", spinWheel);
-
+      
         document.getElementById("viewHistory").addEventListener("click", function () {
     let history = JSON.parse(localStorage.getItem("wheelHistory")) || [];
 
@@ -564,11 +568,11 @@ document.getElementById("clearHistory").addEventListener("click", function() {
         localStorage.removeItem("wheelHistory");
     });
 
-    window.onload = function() {
-    var audio = document.getElementById('backgroundMusic');
-    audio.muted = false;  // Bật âm thanh sau khi tải trang
-    audio.play();
-  };
+//     window.onload = function() {
+//     var audio = document.getElementById('backgroundMusic');
+//     audio.muted = false;  // Bật âm thanh sau khi tải trang
+//     audio.play();
+//   };
   document.getElementById("closeModal").addEventListener("click", function() {
         document.getElementById("winnerModal").style.display = "none";
     });
