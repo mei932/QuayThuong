@@ -373,10 +373,12 @@ function spinWheel() {
 
     let history = JSON.parse(localStorage.getItem("wheelHistory")) || [];
     let currentStage = parseInt(localStorage.getItem("currentStage")) || 1; // Lấy chặng hiện tại
-
+// Loại bỏ những người đã trúng từ danh sách `names`
+let winners = history.map(entry => entry.id);
+    names = names.filter(person => !winners.includes(person.id));
     // Kiểm tra nếu đã hoàn thành tất cả các chặng
-    if (currentStage > 5) {
-        alert("🎊 Đã hoàn thành tất cả các chặng!");
+    if (currentStage > 5 || names.length === 0)  {
+        alert("🎊 Đã hoàn thành tất cả các chặng! hoặc hết người chơi");
         spinning = false;
         return;
     }
@@ -401,6 +403,14 @@ setTimeout(() => {
     congratulationMusic.play(); 
     backgroundMusic.pause();
     document.getElementById("winnerModal").style.display = "flex";
+     // 🛑 Loại bỏ người trúng khỏi danh sách
+     names = names.filter(person => person.id !== lastWinner.id);
+     drawWheel();
+
+if (names.length === 0) {
+    alert("🎉 Đã hết người chơi!");
+    document.getElementById("spinButton").disabled = true;
+}
     
 }, 15000); // Đợi 15 giây rồi hiển thị kết quả
                 return;
@@ -490,6 +500,10 @@ document.getElementById("saveWinner").addEventListener("click", function () {
         localStorage.setItem("wheelHistory", JSON.stringify(history));
 
         alert(`✅ Kết quả đã được lưu!`);
+        
+        // 🛑 Loại bỏ người đã trúng khỏi danh sách
+        names = names.filter(person => person.id !== lastWinner.id);
+        
 
         if (peopleInCurrentStage + 1 >= stageLimits[currentStage - 1]) {
             setTimeout(() => {
